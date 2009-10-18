@@ -1,4 +1,3 @@
-''' Autojoin current channels '''
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2009 by xt <xt@bash.no>
@@ -60,7 +59,8 @@ for option, default_value in settings.items():
     if w.config_get_plugin(option) == "":
         w.config_set_plugin(option, default_value)
 
-def autosave_autojoin_channels(data, buffer, argsi):
+def autosave_autojoin_channels(data, buffer, args):
+    ''' Autojoin current channels '''
     if w.config_get_plugin(option) != "on":
         return w.WEECHAT_RC_OK
     items = find_channels()
