@@ -27,7 +27,7 @@
 #     /set plugins.var.python.autojoin.autosave 'on'
 #
 # @TODO: find_channels() also returns channels which are already /part'ed but
-#        are still in a buffer
+#        are still in a buffer (use demo_infolist)
 # @TODO: plugin responds to all part messages, not only from self
 
 import weechat as w
