@@ -25,6 +25,10 @@
 # 2009-06-18, LBo <leon@tim-online.nl>
 #     version 0.2: added autosaving of join channels
 #     /set plugins.var.python.autojoin.autosave 'on'
+#
+# @TODO: find_channels() also returns channels which are already /part'ed but
+#        are still in a buffer
+# @TODO: plugin responds to all part messages, not only from self
 
 import weechat as w
 
@@ -50,9 +54,9 @@ if w.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT
                    "autojoin_cb",
                    "")
 
-    w.hook_signal('*,irc_in2_join',  'autosave_autojoin_channels', '')
-    w.hook_signal('*,irc_in2_part',  'autosave_autojoin_channels', '')
-    w.hook_signal('quit',            'write_autojoin_channels',    '')
+    w.hook_signal('*,irc_in2_join', 'autosave_autojoin_channels', '')
+    w.hook_signal('*,irc_in2_part', 'autosave_autojoin_channels', '')
+    w.hook_signal('quit',           'autosave_autojoin_channels', '')
 
 # Init everything
 for option, default_value in settings.items():
@@ -60,6 +64,9 @@ for option, default_value in settings.items():
         w.config_set_plugin(option, default_value)
 
 def autosave_autojoin_channels(data, buffer, args):
+    #just for testing
+    w.prnt('2', args)
+
     ''' Autojoin current channels '''
     if w.config_get_plugin(option) != "on":
         return w.WEECHAT_RC_OK
