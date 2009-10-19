@@ -28,9 +28,10 @@
 #
 # @TODO: find_channels() also returns channels which are already /part'ed but
 #        are still in a buffer (use demo_infolist)
-# @TODO: plugin responds to all part messages, not only from self
+# @TODO: plugin responds to all part/join messages, not only from self
 
 import weechat as w
+import re
 
 SCRIPT_NAME    = "autojoin"
 SCRIPT_AUTHOR  = "xt <xt@bash.no>"
@@ -56,6 +57,12 @@ if w.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT
 
     w.hook_signal('*,irc_in2_join', 'autosave_autojoin_channels', '')
     w.hook_signal('*,irc_in2_part', 'autosave_autojoin_channels', '')
+
+    #w.hook_signal('*,irc_in2_part',   'test_out', '')
+    #w.hook_signal('*,irc_in2_join',   'test_out', '')
+    #w.hook_signal('*,irc_out_part',   'test_out', '')
+    #w.hook_signal('*,irc_out_join',   'test_out', '')
+
     w.hook_signal('quit',           'autosave_autojoin_channels', '')
 
 # Init everything
@@ -63,20 +70,41 @@ for option, default_value in settings.items():
     if w.config_get_plugin(option) == "":
         w.config_set_plugin(option, default_value)
 
-def autosave_autojoin_channels(data, buffer, args):
-    #just for testing
-    w.prnt('2', args)
+def test_out(signal, callback, callback_data):
+    w.prnt('', 'just testing....:')
+    w.prnt('', 'signal: ' + signal)
+    w.prnt('', 'callback: ' + callback)
+    w.prnt('', 'callback_data: ' + callback_data)
 
+    for server, channels in find_channels().iteritems():
+        nick = w.info_get('irc_nick', server)
+        w.prnt('', 'nick: ' + nick)
+        w.prnt('', channels)
+
+    return w.WEECHAT_RC_OK
+
+def autosave_autojoin_channels(signal, callback, callback_data):
     ''' Autojoin current channels '''
     if w.config_get_plugin(option) != "on":
         return w.WEECHAT_RC_OK
+    
     items = find_channels()
 
     # print/execute commands
     for server, channels in items.iteritems():
-        channels = channels.rstrip(',')
-        command = "/set irc.server.%s.autojoin '%s'" % (server, channels)
-        w.command('', command)
+        # callback_data :LBo!n=leon@kbl-tnz881.zeelandnet.nl JOIN :##fix_your_connection
+        nick = w.info_get('irc_nick', server)
+
+        pattern = "^:%s!.*(JOIN|PART) :(.*$)" % nick
+        match = re.match(pattern, callback_data)
+        
+        if match: # check if nick is my nick. In that case: save
+            channels = channels.rstrip(',')
+            channel = match.group(2)
+            command = "/set irc.server.%s.autojoin '%s'" % (server, channels)
+            w.command('', command)
+        else: # someone else: ignore
+            continue
 
     return w.WEECHAT_RC_OK
 
