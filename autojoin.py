@@ -86,6 +86,8 @@ def autosave_autojoin_channels(signal, callback, callback_data):
 
 def autojoin_cb(data, buffer, args):
     """Old behaviour: doesn't save empty channel list"""
+    """In fact should also save open buffers with a /part'ed channel"""
+    """But I can't believe somebody would want that behaviour"""
     items = find_channels()
 
     # print/execute commands
@@ -102,6 +104,8 @@ def autojoin_cb(data, buffer, args):
     return w.WEECHAT_RC_OK
 
 def find_channels():
+    """Return list of servers and channels"""
+    #@TODO: make it return a dict with more options like "nicks_count etc."
     items = {}
     infolist = w.infolist_get('irc_server', '', '')
     # populate servers
