@@ -66,21 +66,16 @@ def autosave_autojoin_channels(signal, callback, callback_data):
         return w.WEECHAT_RC_OK
     
     items = find_channels()
-    w.prnt('', str(items))
 
     # print/execute commands
     for server, channels in items.iteritems():
         nick = w.info_get('irc_nick', server)
-        w.prnt('', 'nick: %s' % nick)
-        w.prnt('', 'callback_data: %s' % callback_data)
 
         pattern = "^:%s!.*(JOIN|PART) :?(#[^ ]*)( :.*$)?" % nick
         match = re.match(pattern, callback_data)
         
         if match: # check if nick is my nick. In that case: save
             channel = match.group(2)
-            w.prnt('', 'match!')
-            w.prnt('', 'channel: ' + channel)
             channels = channels.rstrip(',')
             command = "/set irc.server.%s.autojoin '%s'" % (server, channels)
             w.command('', command)
