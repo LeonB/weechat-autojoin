@@ -22,9 +22,18 @@
 # 2009-06-18, xt <xt@bash.no>
 #     version 0.1: initial release
 #
-# 2009-06-18, LBo <leon@tim-online.nl>
+# 2009-10-18, LBo <leon@tim-online.nl>
 #     version 0.2: added autosaving of join channels
 #     /set plugins.var.python.autojoin.autosave 'on'
+#
+# 2009-10-19, LBo <leon@tim-online.nl>
+#     version 0.2.1: now only responds to part messages from self
+#     find_channels() only returns join'ed channels, not all the buffers
+#     updated description and docs
+#
+# 2009-10-20, LBo <leon@tim-online.nl>
+#     version 0.2.2: fixed quit callback
+#     removed the callbacks on part & join messages
 
 import weechat as w
 import re
@@ -33,7 +42,8 @@ SCRIPT_NAME    = "autojoin"
 SCRIPT_AUTHOR  = "xt <xt@bash.no>"
 SCRIPT_VERSION = "0.2.1"
 SCRIPT_LICENSE = "GPL3"
-SCRIPT_DESC    = "Configure autojoin for all servers according to currently joined channels"
+SCRIPT_DESC    = "Configure autojoin for all servers according to currently \
+                  joined channels. Autosaving support is added in version 0.2"
 SCRIPT_COMMAND = "autojoin"
 
 # script options
@@ -51,16 +61,32 @@ if w.register(SCRIPT_NAME, SCRIPT_AUTHOR, SCRIPT_VERSION, SCRIPT_LICENSE, SCRIPT
                    "autojoin_cb",
                    "")
 
-    w.hook_signal('*,irc_in2_join', 'autosave_autojoin_channels', '')
-    w.hook_signal('*,irc_in2_part', 'autosave_autojoin_channels', '')
-    w.hook_signal('quit',           'autosave_autojoin_channels', '')
+    #w.hook_signal('*,irc_in2_join', 'autosave_channels_on_activity', '')
+    #w.hook_signal('*,irc_in2_part', 'autosave_channels_on_activity', '')
+    w.hook_signal('quit',           'autosave_channels_on_quit', '')
 
 # Init everything
 for option, default_value in settings.items():
     if w.config_get_plugin(option) == "":
         w.config_set_plugin(option, default_value)
 
-def autosave_autojoin_channels(signal, callback, callback_data):
+def autosave_channels_on_quit(signal, callback, callback_data):
+    ''' Autojoin current channels '''
+    if w.config_get_plugin(option) != "on":
+        return w.WEECHAT_RC_OK
+    
+    items = find_channels()
+
+    # print/execute commands
+    for server, channels in items.iteritems():
+        channels = channels.rstrip(',')
+        command = "/set irc.server.%s.autojoin '%s'" % (server, channels)
+        w.command('', command)
+
+    return w.WEECHAT_RC_OK
+
+
+def autosave_channels_on_activity(signal, callback, callback_data):
     ''' Autojoin current channels '''
     if w.config_get_plugin(option) != "on":
         return w.WEECHAT_RC_OK
