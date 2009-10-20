@@ -34,6 +34,8 @@
 # 2009-10-20, LBo <leon@tim-online.nl>
 #     version 0.2.2: fixed quit callback
 #     removed the callbacks on part & join messages
+#
+# @TODO: maybe add an option to enable autosaving on part/join messages
 
 import weechat as w
 import re
