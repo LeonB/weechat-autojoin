@@ -35,6 +35,7 @@
 #     version 0.2.2: fixed quit callback
 #     removed the callbacks on part & join messages
 #
+# @TODO: add options to ignore certain buffers
 # @TODO: maybe add an option to enable autosaving on part/join messages
 
 import weechat as w
